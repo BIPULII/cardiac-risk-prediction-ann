@@ -1,0 +1,20 @@
+Dataset Analysis Summary
+------------------------
+Source: UCI Machine Learning Repository (Heart Disease Dataset)
+
+1. Dataset Dimensions (Initial):
+- Total Records (Rows): 303 patient records
+- Total Attributes (Columns): 14
+
+2. Feature Breakdown:
+- Input Features: 13 clinical parameters (age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal)
+- Target Variable: 1 (binary classification: 0 = No Disease, 1 = Disease Risk)
+
+3. Data Quality & Preprocessing:
+- Missing Values Detected: 'ca' (4 missing), 'thal' (2 missing).
+- Handling Missing Data: The 6 incomplete rows were dropped, resulting in a final clean dataset of 297 records.
+- Feature Scaling: Applied StandardScaler to normalize clinical parameters, ensuring optimal convergence for the Artificial Neural Network.
+- Train/Test Split: 80% training data, 20% testing data.
+
+Conclusion:
+The dataset successfully underwent cleaning and normalization. It is balanced and formatted for binary classification, making it fully ready for ANN model training.
