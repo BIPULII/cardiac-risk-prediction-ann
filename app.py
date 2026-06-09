@@ -1,45 +1,67 @@
 import streamlit as st
 import requests
 
-st.title("Cardiac Disease Risk Prediction Dashboard")
-st.write("Enter patient clinical parameters below to securely query the AI microservice.")
+# 1. UI Headers & Description
+st.set_page_config(page_title="Cardiac Risk Predictor", layout="centered")
+st.title("🫀 AI-Based Cardiac Disease Risk Prediction")
+st.markdown("Enter patient clinical data below to assess the probability of cardiac disease risk using our highly optimized Artificial Neural Network.")
 
-# UI Inputs 
-age = st.number_input("Age", min_value=1, max_value=120, value=50)
-sex = st.selectbox("Sex (1 = Male, 0 = Female)", [1, 0])
-cp = st.selectbox("Chest Pain Type (0-3)", [0, 1, 2, 3])
-trestbps = st.number_input("Resting Blood Pressure", value=120.0)
-chol = st.number_input("Serum Cholestoral in mg/dl", value=200.0)
-fbs = st.selectbox("Fasting Blood Sugar > 120 mg/dl (1 = True, 0 = False)", [1, 0])
-restecg = st.selectbox("Resting ECG results (0-2)", [0, 1, 2])
-thalach = st.number_input("Maximum Heart Rate Achieved", value=150.0)
-exang = st.selectbox("Exercise Induced Angina (1 = Yes, 0 = No)", [1, 0])
-oldpeak = st.number_input("ST depression induced by exercise", value=1.0)
-slope = st.selectbox("Slope of the peak exercise ST segment (0-2)", [0, 1, 2])
-ca = st.selectbox("Number of major vessels (0-4)", [0, 1, 2, 3, 4])
-thal = st.selectbox("Thalassemia (0-3)", [0, 1, 2, 3])
+# 2. Input Fields (Arranged in clean columns)
+col1, col2, col3 = st.columns(3)
 
-if st.button("Predict Cardiac Risk"):
-    # 1. Package the UI data
+with col1:
+    age = st.number_input("Age", min_value=1, max_value=120, value=55)
+    sex = st.selectbox("Sex (1=M, 0=F)", [1, 0])
+    cp = st.selectbox("Chest Pain Type (0-3)", [0, 1, 2, 3], index=2)
+    trestbps = st.number_input("Resting Blood Pressure", min_value=50, max_value=250, value=140)
+    chol = st.number_input("Cholesterol", min_value=100, max_value=600, value=250)
+
+with col2:
+    fbs = st.selectbox("Fasting Blood Sugar > 120 (1=T, 0=F)", [0, 1])
+    restecg = st.selectbox("Resting ECG (0-2)", [0, 1, 2])
+    thalach = st.number_input("Max Heart Rate", min_value=60, max_value=220, value=150)
+    exang = st.selectbox("Exercise Induced Angina (1=Y, 0=N)", [0, 1])
+    oldpeak = st.number_input("ST Depression", min_value=0.0, max_value=6.0, value=1.0)
+
+with col3:
+    slope = st.selectbox("Slope of Peak ST (0-2)", [0, 1, 2])
+    ca = st.selectbox("Major Vessels Colored (0-4)", [0, 1, 2, 3, 4])
+    thal = st.selectbox("Thalassemia (0-3)", [0, 1, 2, 3], index=2)
+
+# 3. Prediction Execution
+if st.button("Predict Cardiac Risk", type="primary"):
     payload = {
-        "age": age, "sex": sex, "cp": cp, "trestbps": trestbps,
-        "chol": chol, "fbs": fbs, "restecg": restecg, "thalach": thalach,
-        "exang": exang, "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
+        "features": [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
     }
     
-    # 2. Send it to the FastAPI Backend
     try:
-        response = requests.post("http://127.0.0.1:8000/predict", json=payload)
+        # Note: Pointing to the Docker internal network name we will use
+        response = requests.post("http://fastapi-backend:8000/predict", json=payload)
         
         if response.status_code == 200:
-            result = response.json()
-            risk_prob = result["risk_probability"]
+            data = response.json()
+            prob = data['risk_probability']
             
-            if result["high_risk"]:
-                st.error(f"⚠️ High Risk of Cardiac Disease Detected. (Confidence: {risk_prob:.2%})")
+            # 4. Risk Level Logic
+            st.divider()
+            if prob <= 0.40:
+                risk_level = "Low Risk 🟢"
+                st.success(f"### Prediction: No Heart Disease Risk")
+            elif prob <= 0.70:
+                risk_level = "Medium Risk 🟡"
+                st.warning(f"### Prediction: Elevated Risk Detected")
             else:
-                st.success(f"✅ Low Risk of Cardiac Disease. (Confidence: {1 - risk_prob:.2%})")
+                risk_level = "High Risk 🔴"
+                st.error(f"### Prediction: Heart Disease Risk Present")
+            
+            st.markdown(f"**Risk Probability:** {prob:.1%}")
+            st.markdown(f"**Risk Level:** {risk_level}")
+            
         else:
-            st.error("Error: The API rejected the request.")
+            st.error("Error connecting to the Neural Network backend.")
     except Exception as e:
-        st.error("Connection failed. Is the FastAPI backend running?")
+        st.error(f"Failed to connect to API: {e}")
+
+# 5. Medical Disclaimer
+st.divider()
+st.caption("⚠️ **Disclaimer:** This system is developed for academic purposes only. It is not a replacement for professional medical diagnosis, advice, or treatment.")
