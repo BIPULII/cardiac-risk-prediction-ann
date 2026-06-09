@@ -5,7 +5,7 @@ import seaborn as sns
 from sklearn.ensemble import RandomForestClassifier
 from src.data_preprocessing import load_and_preprocess_data
 
-print("Booting Explainability Engine...")
+print("Booting Advanced Explainability Engine...")
 
 # Load Data
 X_train_scaled, X_test_scaled, y_train, y_test = load_and_preprocess_data('data/heart.csv')
@@ -15,23 +15,56 @@ print("Extracting feature importances...")
 rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
 rf_model.fit(X_train_scaled, y_train)
 
-# The 13 clinical features based on the UCI dataset standard
-features = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 
-            'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+# 1. NEW: Dictionary to translate raw column names to human-readable Presentation Labels
+feature_mapping = {
+    'age': 'Age',
+    'sex': 'Sex (Gender)',
+    'cp': 'Chest Pain Type',
+    'trestbps': 'Resting Blood Pressure',
+    'chol': 'Serum Cholesterol',
+    'fbs': 'Fasting Blood Sugar',
+    'restecg': 'Resting ECG Results',
+    'thalach': 'Max Heart Rate Achieved',
+    'exang': 'Exercise Induced Angina',
+    'oldpeak': 'ST Depression (Exercise)',
+    'slope': 'Slope of Peak ST Segment',
+    'ca': 'Major Vessels Colored by Fluoroscopy',
+    'thal': 'Thalassemia Type'
+}
 
+raw_features = ['age', 'sex', 'cp', 'trestbps', 'chol', 'fbs', 'restecg', 
+                'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal']
+
+# Apply the mapping
+readable_features = [feature_mapping[f] for f in raw_features]
+
+# Create DataFrame
 importance_df = pd.DataFrame({
-    'Feature': features,
+    'Feature': readable_features,
     'Importance': rf_model.feature_importances_
-}).sort_values(by='Importance', ascending=False)
+})
 
-# Generate the Visualization
-plt.figure(figsize=(10, 6))
-sns.barplot(x='Importance', y='Feature', data=importance_df, palette='viridis')
-plt.title('Clinical Feature Importance (Drivers of Cardiac Risk)')
-plt.xlabel('Impact on Prediction')
-plt.ylabel('Clinical Feature')
+# 2. NEW: Convert to percentages for easier audience comprehension
+importance_df['Importance %'] = importance_df['Importance'] * 100
+importance_df = importance_df.sort_values(by='Importance %', ascending=False)
 
-# Save to outputs
+# 3. NEW: Generate the High-Resolution Visualization
+print("Generating presentation-ready graph...")
+plt.figure(figsize=(12, 8))
+sns.set_theme(style="whitegrid")
+
+# Draw the barplot with a more professional color palette
+ax = sns.barplot(x='Importance %', y='Feature', data=importance_df, palette='magma')
+
+# Add the exact percentage text directly onto the end of each bar
+for i in ax.containers:
+    ax.bar_label(i, fmt='%.1f%%', padding=5, fontweight='bold')
+
+plt.title('Top Clinical Drivers of Cardiac Risk', fontsize=16, fontweight='bold')
+plt.xlabel('Impact on AI Prediction (%)', fontsize=12)
+plt.ylabel('') # Left blank because the feature names explain themselves
+
+# Save to outputs in 300 DPI High-Resolution
 os.makedirs('outputs', exist_ok=True)
-plt.savefig('outputs/feature_importance.png', bbox_inches='tight')
-print("Explainability graph saved securely to outputs/feature_importance.png")
+plt.savefig('outputs/feature_importance.png', bbox_inches='tight', dpi=300)
+print("Presentation graph saved securely to outputs/feature_importance.png")
