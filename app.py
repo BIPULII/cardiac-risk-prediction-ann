@@ -31,12 +31,24 @@ with col3:
 # 3. Prediction Execution
 if st.button("Predict Cardiac Risk", type="primary"):
     payload = {
-        "features": [age, sex, cp, trestbps, chol, fbs, restecg, thalach, exang, oldpeak, slope, ca, thal]
+        "age": age,
+        "sex": sex,
+        "cp": cp,
+        "trestbps": trestbps,
+        "chol": chol,
+        "fbs": fbs,
+        "restecg": restecg,
+        "thalach": thalach,
+        "exang": exang,
+        "oldpeak": oldpeak,
+        "slope": slope,
+        "ca": ca,
+        "thal": thal
     }
     
     try:
         # Note: Pointing to the Docker internal network name we will use
-        response = requests.post("http://fastapi-backend:8000/predict", json=payload)
+        response = requests.post("http://127.0.0.1:8080/predict", json=payload)
         
         if response.status_code == 200:
             data = response.json()

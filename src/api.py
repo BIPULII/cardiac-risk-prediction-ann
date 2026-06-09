@@ -8,7 +8,7 @@ import tensorflow as tf
 app = FastAPI(title="Cardiac Risk API")
 
 # Load the AI assets into memory on startup
-model = tf.keras.models.load_model('models/cardiac_ann_model.h5')
+model = tf.keras.models.load_model('models/heart_ann_model.keras')
 scaler = joblib.load('outputs/scaler.pkl')
 
 # Define the exact data structure we expect from the UI
