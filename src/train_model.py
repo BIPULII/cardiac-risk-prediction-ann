@@ -7,7 +7,7 @@ import seaborn as sns
 import numpy as np
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
-    confusion_matrix, specificity_score, balanced_accuracy_score, 
+    confusion_matrix, balanced_accuracy_score, 
     average_precision_score, matthews_corrcoef, cohen_kappa_score, roc_curve, auc
 )
 from src.data_preprocessing import load_and_preprocess_data
